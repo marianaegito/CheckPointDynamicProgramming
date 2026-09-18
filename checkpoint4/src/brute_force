@@ -1,0 +1,131 @@
+"""Questao 2 — Parte B: Forca Bruta.
+
+Problema: dado o vetor de criticidades ``c[0..n-1]``, encontrar o intervalo
+contiguo ``[i, j]`` que maximiza ``C(i, j) = Σ_{t=i..j} c_t``.
+
+Duas versoes explicitas sao fornecidas:
+
+``forca_bruta_cubica``
+    Enumera todos os pares ``(i, j)`` e **recalcula** a soma do zero. E a
+    traducao literal do enunciado ("examinar explicitamente os possiveis
+    intervalos"), com custo ``Θ(n^3)``. Usada apenas para n pequeno, como
+    referencia de corretude.
+
+``forca_bruta``
+    Tambem enumera **todos** os ``n(n+1)/2`` intervalos, mas reaproveita a soma
+    parcial ao estender ``j`` (``soma += c[j]``). Continua sendo forca bruta —
+    nenhum intervalo e podado — e custa ``Θ(n^2)``. E esta a versao levada ao
+    experimento de escalabilidade.
+
+Nao ha uso de funcao pronta: a busca e feita pelos lacos abaixo.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import List, Sequence, Tuple
+
+
+@dataclass(frozen=True)
+class ResultadoIntervalo:
+    """Intervalo critico encontrado por um algoritmo.
+
+    ``operacoes`` conta as operacoes relevantes (somas/comparacoes do laco
+    interno) e permite confrontar o custo empirico com a analise assintotica.
+    """
+
+    inicio: int
+    fim: int
+    valor: float
+    operacoes: int = 0
+    algoritmo: str = ""
+
+    @property
+    def tamanho(self) -> int:
+        return self.fim - self.inicio + 1
+
+    def como_tupla(self) -> Tuple[int, int, float]:
+        return (self.inicio, self.fim, self.valor)
+
+
+def _validar(valores: Sequence[float]) -> None:
+    if valores is None or len(valores) == 0:
+        raise ValueError("vetor de criticidades vazio")
+    if any(not isinstance(v, (int, float)) for v in valores):
+        raise TypeError("todos os valores devem ser numericos")
+
+
+# --------------------------------------------------------------------------- #
+def forca_bruta_cubica(valores: Sequence[float]) -> ResultadoIntervalo:
+    """Enumeracao total com recomputacao da soma. ``Θ(n^3)`` tempo, ``O(1)`` espaco."""
+    _validar(valores)
+    n = len(valores)
+    melhor_i = melhor_j = 0
+    melhor = float("-inf")
+    ops = 0
+    for i in range(n):
+        for j in range(i, n):
+            soma = 0.0
+            for t in range(i, j + 1):     # recomputa: origem do n^3
+                soma += valores[t]
+                ops += 1
+            if soma > melhor:
+                melhor, melhor_i, melhor_j = soma, i, j
+    return ResultadoIntervalo(melhor_i, melhor_j, melhor, ops, "forca_bruta_cubica")
+
+
+def forca_bruta(valores: Sequence[float]) -> ResultadoIntervalo:
+    """Enumeracao total com soma incremental. ``Θ(n^2)`` tempo, ``O(1)`` espaco.
+
+    De onde vem o ``n^2``: o laco externo roda ``n`` vezes e, para cada ``i``, o
+    laco interno roda ``n - i`` vezes. O total e
+    ``Σ_{i=0}^{n-1}(n-i) = n(n+1)/2 ∈ Θ(n^2)`` intervalos avaliados, cada um em
+    ``O(1)``.
+
+    O espaco e ``O(1)``: alem do vetor de entrada, guardam-se apenas cinco
+    escalares (``i``, ``j``, ``soma``, ``melhor`` e os indices do melhor).
+    """
+    _validar(valores)
+    n = len(valores)
+    melhor_i = melhor_j = 0
+    melhor = float("-inf")
+    ops = 0
+    for i in range(n):
+        soma = 0.0
+        for j in range(i, n):
+            soma += valores[j]            # estende o intervalo em O(1)
+            ops += 1
+            if soma > melhor:
+                melhor, melhor_i, melhor_j = soma, i, j
+    return ResultadoIntervalo(melhor_i, melhor_j, melhor, ops, "forca_bruta")
+
+
+def top_intervalos(valores: Sequence[float], k: int = 5,
+                   sobreposicao: bool = False) -> List[ResultadoIntervalo]:
+    """k melhores intervalos (uso analitico; mantem o custo ``Θ(n^2)``).
+
+    Com ``sobreposicao=False`` os intervalos retornados sao disjuntos, o que e
+    util para identificar *varios* periodos criticos distintos do sistema.
+    """
+    _validar(valores)
+    if k <= 0:
+        raise ValueError("k deve ser positivo")
+    n = len(valores)
+    candidatos: List[Tuple[float, int, int]] = []
+    for i in range(n):
+        soma = 0.0
+        for j in range(i, n):
+            soma += valores[j]
+            candidatos.append((soma, i, j))
+    candidatos.sort(reverse=True)
+
+    escolhidos: List[ResultadoIntervalo] = []
+    ocupados: List[Tuple[int, int]] = []
+    for soma, i, j in candidatos:
+        if len(escolhidos) >= k:
+            break
+        if not sobreposicao and any(i <= b and a <= j for a, b in ocupados):
+            continue
+        escolhidos.append(ResultadoIntervalo(i, j, soma, 0, "top_intervalos"))
+        ocupados.append((i, j))
+    return escolhidos
