@@ -1,0 +1,8 @@
+# Bibliotecas usadas apenas para leitura de dados, graficos, medicao e testes.
+# Os algoritmos avaliados (Dijkstra, Greedy, DP, Forca Bruta, Divide & Conquer)
+# sao implementados pelo grupo, sem networkx / scipy.optimize / pulp.
+matplotlib>=3.7
+pandas>=2.0
+pytest>=7.4
+jupyter>=1.0
+notebook>=7.0
