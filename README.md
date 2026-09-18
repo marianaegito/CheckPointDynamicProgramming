@@ -1,6 +1,6 @@
-# Checkpoint 4 — Algoritmos e Estruturas de Dados (Turma W)
+# Checkpoint 4, Algoritmos e Estruturas de Dados (Turma W)
 
-**FIAP — Dynamic Programming**
+**FIAP, Dynamic Programming**
 
 ## Integrantes
 
@@ -13,10 +13,10 @@
 **Semente de reprodutibilidade:** `SEED = 1128587` (definida em `src/config.py`)
 
 A seed é a **soma dos RMs dos integrantes** (566043 + 562544). A regra é
-documentada e verificável, e garante que grupos distintos — que têm RMs
-distintos — trabalhem com instâncias distintas do problema.
+documentada e verificável, e garante que grupos distintos, que têm RMs
+distintos, trabalhem com instâncias distintas do problema.
 
-> Trocar `SEED` gera outra instância completa — outro grafo na Questão 1 e outra
+> Trocar `SEED` gera outra instância completa. Outro grafo na Questão 1 e outra
 > série temporal na Questão 2. Rodar duas vezes com a mesma semente produz
 > exatamente os mesmos arquivos, figuras e números.
 
@@ -24,16 +24,16 @@ distintos — trabalhem com instâncias distintas do problema.
 
 ## 1. Problema
 
-**Questão 1 — Logística de emergência.** Depois de um evento climático severo,
+**Questão 1. Logística de emergência.** Depois de um evento climático severo,
 uma equipe de Defesa Civil precisa distribuir recursos limitados (água,
 medicamentos, alimentos, kits de higiene, cobertores) a partir de um centro de
 distribuição para regiões afetadas. Algumas vias estão interditadas por
 alagamento ou deslizamento. O veículo tem capacidade limitada. Duas decisões
 precisam ser tomadas: **quais** regiões atender e **em que ordem**.
 
-**Questão 2 — Consumo de energia.** Dado um histórico horário de medições de
+**Questão 2. Consumo de energia.** Dado um histórico horário de medições de
 consumo por região, encontrar o intervalo contínuo de tempo com maior condição
-crítica acumulada — a janela em que o sistema esteve sob maior estresse
+crítica acumulada, a janela em que o sistema esteve sob maior estresse
 simultâneo de carga, capacidade, prioridade e custo.
 
 ## 2. Modelo adotado
@@ -45,11 +45,11 @@ simultâneo de carga, capacidade, prioridade e custo.
   euclidiana entre os pontos, o que garante desigualdade triangular. O grafo é
   **esparso** (43 de 210 arestas possíveis) e **não completo**, como exige o
   enunciado. Seis vias estão declaradas indisponíveis.
-* Cada ponto carrega: pessoas afetadas, prioridade (1–5), demanda de recursos,
+* Cada ponto carrega: pessoas afetadas, prioridade (1 a 5), demanda de recursos,
   benefício esperado e coordenadas.
 * **Alcançabilidade** vem de um Dijkstra próprio a partir do centro, ignorando
   vias bloqueadas. Um ponto isolado sai do universo de decisão *antes* de
-  qualquer cálculo de carga — ele não é um item de valor zero, é uma decisão
+  qualquer cálculo de carga. Ele não é um item de valor zero, é uma decisão
   indisponível.
 * **Seleção de atendimentos** = mochila 0/1: maximizar `Σ βᵢxᵢ` sujeito a
   `Σ dᵢxᵢ ≤ C`.
@@ -79,7 +79,7 @@ simultâneo de carga, capacidade, prioridade e custo.
   **negativa**. Se todos os `cᵢ` fossem positivos, o intervalo de maior soma
   seria trivialmente a série inteira. Com sinais mistos (30,8% positivos nesta
   instância), o problema vira genuinamente "subsequência contígua de soma
-  máxima". Como `cᵢ` depende só da medição `i`, a criticidade é **aditiva** — e é
+  máxima". Como `cᵢ` depende só da medição `i`, a criticidade é **aditiva**, e é
   essa aditividade que sustenta tanto as somas de prefixo quanto a fase COMBINE
   do divide and conquer.
 
@@ -92,7 +92,7 @@ simultâneo de carga, capacidade, prioridade e custo.
 | `dataclass(frozen=True)` | `Ponto`, `Registro` | atributos lidos milhares de vezes e nunca alterados; a imutabilidade impede que o Greedy corrompa os dados que a DP vai usar depois, e torna o objeto hashável |
 | `heap` (`heapq`) | Dijkstra, ranking guloso, top-k de picos | a operação dominante é "extrair o menor": `O(log n)` no heap contra `O(n)` na lista. No top-k, um heap de tamanho fixo resolve em `O(n log k)` em vez de `O(n log n)` |
 | `list[list[float]]` | tabela DP | acesso `O(1)` a `(i, c)`; a matriz inteira é retida porque a reconstrução e a Figura 3 dependem dela |
-| `list` | série temporal, vetor de criticidades | preserva **ordem** e adjacência temporal — o problema do intervalo contíguo é indefinível sobre `dict` ou `set` |
+| `list` | série temporal, vetor de criticidades | preserva **ordem** e adjacência temporal. O problema do intervalo contíguo é indefinível sobre `dict` ou `set` |
 | `dict` (índice invertido) | `região → posições`, `hora → posições` | consulta por região/horário em `O(1)` + leitura só dos relevantes, contra `O(n)` de varredura |
 | `list` de somas de prefixo | consumo acumulado | soma de qualquer intervalo em `O(1)` após pré-processamento `Θ(n)` |
 | `tuple` | resultados `(i, j, valor)` | barata de copiar, segura de compartilhar entre algoritmos |
@@ -109,20 +109,20 @@ sᵢ =  ─────────────── × ───────�
             dᵢ            1 + 0,6·(δᵢ / δ̄)
 ```
 
-`βᵢ` = benefício, `pᵢ` = prioridade (1–5), `dᵢ` = demanda, `δᵢ` = distância
+`βᵢ` = benefício, `pᵢ` = prioridade (1 a 5), `dᵢ` = demanda, `δᵢ` = distância
 mínima real do centro (Dijkstra), `δ̄` = distância média.
 
 **Por que a decisão é localmente vantajosa.** O núcleo `βᵢ/dᵢ` não é intuição: o
 problema de carga é um knapsack 0/1 e, na sua **relaxação fracionária**, o
 teorema de Dantzig garante que ordenar por `βᵢ/dᵢ` é *exatamente ótimo*. Logo,
 escolher a cada passo o maior `βᵢ/dᵢ` maximiza o ganho por unidade de capacidade
-consumida — a definição formal de decisão localmente ótima. O expoente 1,5 na
+consumida, a definição formal de decisão localmente ótima. O expoente 1,5 na
 prioridade faz a razão entre prioridade 5 e 1 valer 11,2 em vez de 5, porque
 risco de vida não é uma escala linear. O fator `1/(1 + λδᵢ/δ̄)` desconta o tempo
 de deslocamento, o segundo recurso escasso; a normalização por `δ̄` deixa o fator
 adimensional, de modo que a fórmula não muda de comportamento se a cidade for
 medida em km ou em metros. `sᵢ` é crescente em `βᵢ` e `pᵢ` e decrescente em `dᵢ`
-e `δᵢ` — exatamente a semântica desejada.
+e `δᵢ`, exatamente a semântica desejada.
 
 Uma regra como `maior_prioridade_primeiro()` ignora o custo de capacidade: um
 ponto de prioridade 5 que consome metade do caminhão pode valer menos que três
@@ -132,18 +132,18 @@ pontos de prioridade 4 que cabem juntos.
 
 * **Estado:** `DP[i][c]` = maior benefício considerando os `i` primeiros pontos
   candidatos com `c` unidades de capacidade livres. São as duas únicas
-  informações que afetam o futuro — qualquer subconjunto dos primeiros `i`
+  informações que afetam o futuro. Qualquer subconjunto dos primeiros `i`
   pontos com a mesma carga é igualmente bom daí em diante (subestrutura ótima).
 * **Decisão:** não atender (herda `DP[i-1][c]`) ou atender, viável só se
   `dᵢ ≤ c`, valendo `βᵢ + DP[i-1][c-dᵢ]`. Não há atendimento parcial: a demanda
   mínima torna o problema 0/1.
-* **Caso-base:** `DP[0][c] = 0` e `DP[i][0] = 0`.
+* **Caso base:** `DP[0][c] = 0` e `DP[i][0] = 0`.
 * **Recorrência:**
   ```
   DP[i][c] = DP[i-1][c]                                    se dᵢ > c
   DP[i][c] = max(DP[i-1][c], βᵢ + DP[i-1][c-dᵢ])           caso contrário
   ```
-* **Reconstrução:** de `(N, C)` para trás — se `DP[i][c] ≠ DP[i-1][c]`, o ponto
+* **Reconstrução:** de `(N, C)` para trás. Se `DP[i][c] ≠ DP[i-1][c]`, o ponto
   `i` **só pode** ter entrado (foi ele que aumentou o valor); registra-se `i` e
   segue-se para `(i-1, c-dᵢ)`. Caso contrário, para `(i-1, c)`. Exatamente `N`
   passos.
@@ -154,10 +154,10 @@ mesmo item; ela devolve só o valor ótimo, sem o conjunto.
 
 ### 4.3 Força bruta (Questão 2, Parte B)
 
-* `forca_bruta_cubica` — enumera todos os pares `(i, j)` e **recalcula** cada
+* `forca_bruta_cubica` enumera todos os pares `(i, j)` e **recalcula** cada
   soma: `Θ(n³)`. Tradução literal do enunciado, mantida como referência de
   correção.
-* `forca_bruta` — enumera os mesmos `n(n+1)/2` intervalos, mas estende a soma em
+* `forca_bruta` enumera os mesmos `n(n+1)/2` intervalos, mas estende a soma em
   `O(1)`: `Θ(n²)`. É a versão levada ao experimento de escalabilidade.
 
 ### 4.4 Divide and conquer (Questão 2, Parte C)
@@ -166,21 +166,21 @@ mesmo item; ela devolve só o valor ótimo, sem o conjunto.
 DIVIDE (m = (lo+hi)//2) → SOLVE LEFT → SOLVE RIGHT → SOLVE CROSSING → COMBINE
 ```
 
-* **Caso-base:** `lo == hi` → a resposta é `c[lo]`. O intervalo vazio não é
-  permitido, então numa série toda negativa a resposta é o maior elemento — o
+* **Caso base:** `lo == hi` → a resposta é `c[lo]`. O intervalo vazio não é
+  permitido, então numa série toda negativa a resposta é o maior elemento, o
   "período menos folgado", que é o comportamento correto para o problema real.
 * **Divisão:** por posição, no meio. Metades sempre balanceadas → profundidade
   `⌈log₂ n⌉`.
 * **Caso que atravessa:** um intervalo ótimo pode começar antes de `m` e
-  terminar depois — nenhuma das duas recursões o enxerga. Todo intervalo cruzado
-  se escreve como `[i, m] ∪ [m+1, j]`; como as duas partes são independentes,
-  maximiza-se cada uma separadamente: varre-se de `m` para a esquerda guardando
-  o melhor sufixo, e de `m+1` para a direita guardando o melhor prefixo. Custo
-  linear no bloco.
+  terminar depois, e nenhuma das duas recursões o enxerga. Todo intervalo
+  cruzado se escreve como `[i, m] ∪ [m+1, j]`; como as duas partes são
+  independentes, maximiza-se cada uma separadamente: varre-se de `m` para a
+  esquerda guardando o melhor sufixo, e de `m+1` para a direita guardando o
+  melhor prefixo. Custo linear no bloco.
 * **Combinação:** `max` dos três candidatos; empates resolvidos pelo intervalo
   mais à esquerda, o que torna a saída determinística.
 
-Nenhuma função pronta de busca é usada em nenhum dos dois problemas — nem
+Nenhuma função pronta de busca é usada em nenhum dos dois problemas. Nem
 `networkx`, nem `scipy.optimize`, nem `pulp`. As bibliotecas aparecem só para
 leitura de dados, gráficos, medição e testes.
 
@@ -217,9 +217,9 @@ jupyter notebook notebooks/questao2.ipynb
 | Carga | 119/120 | 120/120 |
 | Pontos atendidos | 6 | 5 |
 | Distância percorrida | 546,8 | 352,0 |
-| Gap | 4,16% abaixo do ótimo | — |
+| Gap | 4,16% abaixo do ótimo | |
 
-Cota superior de Dantzig (knapsack fracionário): 499,71 — o ótimo 0/1 fica
+Cota superior de Dantzig (knapsack fracionário): 499,71. O ótimo 0/1 fica
 abaixo dela, como deve ser, e a diferença mede a perda causada pela
 indivisibilidade do atendimento. Note que a DP fecha a carga exata (120/120)
 enquanto o guloso deixa uma unidade ociosa atendendo um ponto a mais.
@@ -227,10 +227,10 @@ enquanto o guloso deixa uma unidade ociosa atendendo um ponto a mais.
 Varredura de 37 capacidades (20 a 200): o guloso encontrou o ótimo em **21
 casos (56,8%)**, com gap médio de **2,09%** e **pior caso de 35,11%** (em
 `C = 20`). O contraste é instrutivo: o guloso acerta na maioria das
-capacidades, mas quando erra pode errar muito — e não há como saber de antemão
+capacidades, mas quando erra pode errar muito, e não há como saber de antemão
 em qual dos dois regimes se está sem resolver o problema exato.
 
-### Contraexemplo do grupo — Greedy ≠ ótimo
+### Contraexemplo do grupo. Greedy ≠ ótimo
 
 Três pontos com a mesma prioridade e a mesma distância do centro (os fatores de
 prioridade e distância se cancelam e `sᵢ` vira exatamente `βᵢ/dᵢ`), capacidade
@@ -256,14 +256,14 @@ avalia explicitamente o estado "capacidade 10 sem o item A" e encontra a troca.
 
 ### Questão 2 (seed 1128587, n = 1.200)
 
-* Intervalo crítico: **`[1070, 1077]`** — 8 horas, de `2026-02-14 14:00` a
-  `2026-02-14 21:00`, criticidade acumulada **490,42**. A janela cai exatamente
-  sobre a ponta vespertina (14h–21h), o que é coerente com o perfil de consumo
-  modelado.
+* Intervalo crítico: **`[1070, 1077]`**, 8 horas, de `14/02/2026 14:00` a
+  `14/02/2026 21:00`, criticidade acumulada **490,42**. A janela cai exatamente
+  sobre a ponta vespertina (14h às 21h), o que é coerente com o perfil de
+  consumo modelado.
 * Força bruta e divide and conquer devolvem o mesmo intervalo, com 720.600 e
   15.950 operações respectivamente (45,2× menos).
 * Estrutura da recursão medida: **2.399 chamadas** (`= 2n − 1`) e profundidade
-  **11** (`= ⌈log₂ 1200⌉`) — exatamente o previsto pela teoria.
+  **11** (`= ⌈log₂ 1200⌉`), exatamente o previsto pela teoria.
 
 | n | Força bruta (s) | D&C (s) | ganho |
 |---|---|---|---|
@@ -275,7 +275,7 @@ avalia explicitamente o estado "capacidade 10 sem o item A" e encontra a troca.
 
 Razão observada × prevista (1.000 → 2.000): força bruta **4,18** contra 4,00
 previsto; divide and conquer **1,98** contra 2,20 previsto. O experimento não
-apenas mostra qual algoritmo é mais rápido — confirma o expoente.
+apenas mostra qual algoritmo é mais rápido. Ele confirma o expoente.
 
 ## 7. Complexidade
 
@@ -285,7 +285,7 @@ Resumo (dedução completa em [`docs/analise_complexidade.md`](docs/analise_comp
 |---|---|---|
 | Dijkstra | `O((V + E) log V)` | `Θ(V + E)` |
 | Greedy (seleção) | `O((V+E) log V + N log N)` | `Θ(V + E + N)` |
-| DP (mochila 0/1) | `Θ(N · C)` | `Θ(N · C)` — ou `Θ(C)` sem reconstrução |
+| DP (mochila 0/1) | `Θ(N · C)` | `Θ(N · C)`, ou `Θ(C)` sem reconstrução |
 | Reconstrução da DP | `Θ(N)` | `O(N)` |
 | Rota (vizinho mais próximo) | `O(k(V+E) log V + k²)` | `Θ(V + E)` |
 | Força bruta (Q2) | `Θ(n²)` | `O(1)` |
@@ -346,15 +346,15 @@ checkpoint4/
 │   ├── estruturas.py            # grafo, heap, índices, registros
 │   ├── gerar_dados.py           # geração reprodutível
 │   ├── solucao.py               # dataclass de solução + validação
-│   ├── greedy.py                # Questão 1 — Parte B
-│   ├── dynamic_programming.py   # Questão 1 — Parte C
-│   ├── comparacao.py            # Questão 1 — Parte D + contraexemplo
-│   ├── criticidade.py           # Questão 2 — função de criticidade
-│   ├── brute_force.py           # Questão 2 — Parte B
-│   ├── divide_conquer.py        # Questão 2 — Parte C
-│   ├── escalabilidade.py        # Questão 2 — Parte D
-│   ├── visualizacao_q1.py       # Questão 1 — Parte E
-│   └── visualizacao_q2.py       # Questão 2 — Parte E
+│   ├── greedy.py                # Questão 1, Parte B
+│   ├── dynamic_programming.py   # Questão 1, Parte C
+│   ├── comparacao.py            # Questão 1, Parte D + contraexemplo
+│   ├── criticidade.py           # Questão 2, função de criticidade
+│   ├── brute_force.py           # Questão 2, Parte B
+│   ├── divide_conquer.py        # Questão 2, Parte C
+│   ├── escalabilidade.py        # Questão 2, Parte D
+│   ├── visualizacao_q1.py       # Questão 1, Parte E
+│   └── visualizacao_q2.py       # Questão 2, Parte E
 ├── notebooks/
 │   ├── questao1.ipynb
 │   └── questao2.ipynb
@@ -381,22 +381,22 @@ de usar a variante de linha única, `Θ(C)`.
 A alternativa descartada era exatamente essa versão otimizada, implementada e
 testada em `mochila_otimizada`: ela devolve o mesmo valor ótimo (484,01)
 percorrendo a capacidade em ordem decrescente, gastando 121 células em vez de
-2.541 — 95% menos memória, com tempo idêntico, `Θ(N·C)`, já que a recorrência é
+2.541, 95% menos memória, com tempo idêntico, `Θ(N·C)`, já que a recorrência é
 a mesma. Em benefício da solução as duas empatam.
 
 O que decidiu a escolha foi a **reconstrução**. Sem as linhas anteriores é
 impossível recuperar *quais* pontos formam o ótimo: o teste
 `DP[i][c] ≠ DP[i-1][c]` precisa da linha `i-1`. E o produto deste projeto não é
-o número 484,01 — é a lista de regiões a atender. Guardar a tabela custou 2.541
+o número 484,01. É a lista de regiões a atender. Guardar a tabela custou 2.541
 floats (≈ 20 KB), memória irrelevante nesta escala, e devolveu três coisas que a
 versão enxuta não entrega: o conjunto atendido, a trilha de decisões usada na
-Figura 3a, e a curva `DP[N][c]` da Figura 3b — que é a última linha da mesma
+Figura 3a, e a curva `DP[N][c]` da Figura 3b, que é a última linha da mesma
 tabela e dá o ótimo para *toda* capacidade intermediária sem recomputar nada.
 
 O contraexemplo confirma que a decisão valeu: greedy 12,0 contra ótimo 19,0
-(perda de 36,8%), e na instância principal a DP entrega 4,3% mais benefício —
-com pior caso medido de 35,11% na varredura de capacidades. O
-trade-off inverteria se `C` fosse muito grande — por ser pseudopolinomial, a
-tabela cresce com o *valor* da capacidade. Para `C = 10⁶` seriam 2×10⁷ células, e
-aí a versão `Θ(C)`, ou o próprio guloso com seu gap médio de 2,09%, voltariam a
-ser a escolha certa.
+(perda de 36,8%), e na instância principal a DP entrega 4,3% mais benefício,
+com pior caso medido de 35,11% na varredura de capacidades. O compromisso
+inverteria se `C` fosse muito grande. Por ser pseudopolinomial, a tabela cresce
+com o *valor* da capacidade. Para `C = 10⁶` seriam 2×10⁷ células, e aí a versão
+`Θ(C)`, ou o próprio guloso com seu gap médio de 2,09%, voltariam a ser a
+escolha certa.

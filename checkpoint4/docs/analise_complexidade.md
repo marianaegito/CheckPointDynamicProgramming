@@ -1,4 +1,4 @@
-# Análise de complexidade — Checkpoint 4
+# Análise de complexidade, Checkpoint 4
 
 Parâmetros usados em todo o documento:
 
@@ -58,7 +58,7 @@ S = Θ(V + E + N)
 
 O termo `N log N` domina o `Θ(N)` da avaliação da função de prioridade; o termo
 de rota domina o resto quando `k` cresce. Não há tabela auxiliar proporcional à
-capacidade — essa é a vantagem estrutural do guloso.
+capacidade. Essa é a vantagem estrutural do guloso.
 
 ### 1.3 Programação dinâmica (`dynamic_programming.construir_tabela`)
 
@@ -66,11 +66,11 @@ Dois laços aninhados: `i` de `1` a `N`, `c` de `0` a `C`. Cada célula faz uma
 comparação e no máximo uma soma, `O(1)`. Portanto:
 
 ```
-T(N, C) = Θ(N · C)      -> 20 × 121 = 2.420 células nesta instância
-S(N, C) = Θ(N · C)      -> tabela (N+1) × (C+1) = 2.541 células
+T(N, C) = Θ(N · C)      →  20 × 121 = 2.420 células nesta instância
+S(N, C) = Θ(N · C)      →  tabela (N+1) × (C+1) = 2.541 células
 ```
 
-Reconstrução: `Θ(N)` — exatamente um passo por linha, de `(N, C)` até
+Reconstrução: `Θ(N)`, exatamente um passo por linha, de `(N, C)` até
 `(0, c)`.
 
 Versão de linha única (`mochila_otimizada`): mesmo `Θ(N · C)` de tempo com
@@ -100,8 +100,8 @@ Verificação empírica (notebook `questao1.ipynb`):
 | Espaço | `Θ(V + E + N)` | `Θ(N · C)` (ou `Θ(C)` sem reconstrução) |
 | Garantia | nenhuma | ótimo global |
 | Resultado (C = 120) | 463,88 | **484,01** (+4,3%) |
-| Pior gap medido (C de 20 a 200) | 35,11% | — |
-| Gap médio | 2,09% | — |
+| Pior gap medido (C de 20 a 200) | 35,11% | |
+| Gap médio | 2,09% | |
 | Vezes em que foi ótimo | 21 de 37 capacidades (56,8%) | 37 de 37 |
 
 Cota superior teórica (limite fracionário de Dantzig) para `C = 120`: **499,71**.
@@ -112,7 +112,7 @@ duas mede exatamente a perda causada pela indivisibilidade do atendimento.
 
 ## Questão 2
 
-### 2.1 Força bruta — `brute_force.forca_bruta`
+### 2.1 Força bruta (`brute_force.forca_bruta`)
 
 O laço externo roda `n` vezes; para cada `i`, o laço interno roda `n - i` vezes.
 
@@ -122,19 +122,19 @@ O laço externo roda `n` vezes; para cada `i`, o laço interno roda `n - i` veze
 
 Cada iteração faz uma soma e uma comparação, `O(1)`, porque a soma é estendida
 incrementalmente (`soma += valores[j]`). O contador interno do algoritmo devolve
-exatamente `n(n+1)/2` — para `n = 1200`, 720.600 operações, confirmado pelo
+exatamente `n(n+1)/2`. Para `n = 1200`, são 720.600 operações, confirmado pelo
 teste `test_medicao_registra_tempo_e_memoria`.
 
 ```
 T(n) = Θ(n²)
-S(n) = O(1)   — cinco escalares além da entrada; sem recursão, sem vetores auxiliares
+S(n) = O(1)   (cinco escalares além da entrada; sem recursão, sem vetores auxiliares)
 ```
 
 A versão `forca_bruta_cubica` recalcula cada soma do zero, acrescentando um
 terceiro laço: `T(n) = Θ(n³)`, `S(n) = O(1)`. É mantida apenas como referência
 de correção para `n` pequeno.
 
-### 2.2 Divide and conquer — `divide_conquer.intervalo_critico_dc`
+### 2.2 Divide and conquer (`divide_conquer.intervalo_critico_dc`)
 
 **Recorrência.** Uma chamada sobre `n` elementos faz duas chamadas sobre `n/2`
 mais uma varredura linear (caso cruzado: um laço de `m` até `lo` e outro de
@@ -159,7 +159,7 @@ Logo cada nível custa `Θ(n)` e o total é `Θ(n log n)`. O número de chamadas
 `test_estrutura_da_recursao`: para `n = 1200`, 2.399 chamadas e profundidade 11
 (`⌈log₂ 1200⌉ = 11`).
 
-**Espaço.** Não há vetores auxiliares — só índices `lo`, `m`, `hi` e escalares.
+**Espaço.** Não há vetores auxiliares, só índices `lo`, `m`, `hi` e escalares.
 O que consome memória é a pilha de chamadas: uma moldura por nível ativo, e há
 no máximo `⌈log₂ n⌉` níveis ativos simultaneamente.
 
@@ -189,13 +189,13 @@ Razão observada × razão prevista pela teoria:
 | 2.000 → 5.000 | 6,38 | 6,25 | 2,65 | 2,80 |
 
 As colunas observada e prevista coincidem dentro do ruído de medição. O
-experimento não apenas mostra que um algoritmo é mais rápido — ele **confirma o
+experimento não apenas mostra que um algoritmo é mais rápido. Ele **confirma o
 expoente**: a força bruta quadruplica o tempo quando `n` dobra, o divide and
 conquer pouco mais que dobra.
 
-O gráfico log-log (Figura 3a) mostra a mesma coisa geometricamente: a
-inclinação da reta é o expoente do polinômio, ≈ 2 para a força bruta e ≈ 1 para
-o `n log n` (a curvatura suave é o fator logarítmico).
+O gráfico em escala logarítmica nos dois eixos (Figura 3a) mostra a mesma coisa
+geometricamente: a inclinação da reta é o expoente do polinômio, ≈ 2 para a
+força bruta e ≈ 1 para o `n log n` (a curvatura suave é o fator logarítmico).
 
 ### 2.4 De 1.000 para 1.000.000 de registros
 
@@ -207,7 +207,7 @@ Extrapolando a partir de `n = 5.000`:
 0,52883 s × 40.000 ≈ 21.153 s ≈ 5,9 horas
 ```
 
-E, se a implementação fosse a cúbica literal, o fator seria `2 × 10⁸` — algo na
+E, se a implementação fosse a cúbica literal, o fator seria `2 × 10⁸`, algo na
 casa de milhares de anos.
 
 **Divide and conquer.** Fator `200 × (log₂10⁶ / log₂5000) = 200 × 1,62 ≈ 324`:
@@ -219,8 +219,8 @@ casa de milhares de anos.
 **Conclusão.** Apenas o divide and conquer permanece viável. A memória não é o
 gargalo em nenhum dos dois casos: a força bruta usa `O(1)` e o divide and
 conquer usa uma pilha de `⌈log₂ 10⁶⌉ = 20` molduras. O gargalo é exclusivamente
-o número de intervalos que a força bruta insiste em enumerar —
-`5 × 10¹¹` para `n = 10⁶`, contra ≈ `2 × 10⁷` operações do divide and conquer.
+o número de intervalos que a força bruta insiste em enumerar, `5 × 10¹¹` para
+`n = 10⁶`, contra ≈ `2 × 10⁷` operações do divide and conquer.
 
 Para escalas ainda maiores, o passo seguinte natural seria o algoritmo de
 Kadane, `Θ(n)` de tempo e `O(1)` de espaço, que resolveria `10⁶` registros em
